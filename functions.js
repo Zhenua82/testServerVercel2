@@ -165,58 +165,79 @@ function getImg(req, res){
 };
 
 function getMp3(req, res){
-    const mp3Path = path.join(__dirname, './media/Gans.mp3');
-    // Проверяем, существует ли файл
-    if (!fs.existsSync(mp3Path)) {
-        res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-        return res.end('Аудио файл не найден');
-    }
-    // Устанавливаем заголовки для аудиофайла
-    res.writeHead(200, { 'Content-Type': 'audio/mpeg' });
-    // Создаем поток для чтения и передаем его в `res`
-    const readStream = fs.createReadStream(mp3Path);
-    readStream.pipe(res); 
+    // const mp3Path = path.join(__dirname, './media/Gans.mp3');
+    // // Проверяем, существует ли файл
+    // if (!fs.existsSync(mp3Path)) {
+    //     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    //     return res.end('Аудио файл не найден');
+    // }
+    // // Устанавливаем заголовки для аудиофайла
+    // res.writeHead(200, { 'Content-Type': 'audio/mpeg' });
+    // // Создаем поток для чтения и передаем его в `res`
+    // const readStream = fs.createReadStream(mp3Path);
+    // readStream.pipe(res); 
+
+ // Заменил на фото:
+    const imgPath = path.join(__dirname, './media/824.jpg');
+    fs.readFile(imgPath, (err, data) => {
+        if (err) {
+            res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+            return res.end('Изображение не найдено');
+        }
+        res.writeHead(200, { 'Content-Type': 'image/jpeg' });
+        res.end(data);
+    });
 };
 function getVideo(req, res){
-     const videoPath = path.join(__dirname, './media/video1.mp4');
-    // Проверяем, существует ли файл
-    if (!fs.existsSync(videoPath)) {
-        res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-        return res.end('Видео файл не найден');
-    }
-    // Получаем размер файла
-    const stat = fs.statSync(videoPath);
-    const fileSize = stat.size;
-    const range = req.headers.range; // Получаем заголовок Range (если есть)
-    if (range) {
-        // Если клиент запросил часть файла (например, для перемотки)
-        const parts = range.replace(/bytes=/, "").split("-");
-        const start = parseInt(parts[0], 10);
-        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-        if (start >= fileSize) {
-            res.writeHead(416, { "Content-Range": `bytes */${fileSize}` });
-            return res.end();
+    // Заменил на фото:
+    const imgPath = path.join(__dirname, './media/824.jpg');
+    fs.readFile(imgPath, (err, data) => {
+        if (err) {
+            res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+            return res.end('Изображение не найдено');
         }
-        const chunkSize = end - start + 1;
-        const fileStream = fs.createReadStream(videoPath, { start, end });
-        res.writeHead(206, {
-            "Content-Range": `bytes ${start}-${end}/${fileSize}`,
-            "Accept-Ranges": "bytes",
-            "Content-Length": chunkSize,
-            "Content-Type": "video/mp4",
-            "Transfer-Encoding": "chunked"
-        });
-        fileStream.pipe(res);
-    } else {
-        // Если клиент запрашивает весь файл
-        res.writeHead(200, {
-            "Content-Length": fileSize,
-            "Content-Type": "video/mp4",
-            "Transfer-Encoding": "chunked"
-        });
-        const fileStream = fs.createReadStream(videoPath);
-        fileStream.pipe(res);
-    }
+        res.writeHead(200, { 'Content-Type': 'image/jpeg' });
+        res.end(data);
+    });
+    //  const videoPath = path.join(__dirname, './media/video1.mp4');
+    // // Проверяем, существует ли файл
+    // if (!fs.existsSync(videoPath)) {
+    //     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    //     return res.end('Видео файл не найден');
+    // }
+    // // Получаем размер файла
+    // const stat = fs.statSync(videoPath);
+    // const fileSize = stat.size;
+    // const range = req.headers.range; // Получаем заголовок Range (если есть)
+    // if (range) {
+    //     // Если клиент запросил часть файла (например, для перемотки)
+    //     const parts = range.replace(/bytes=/, "").split("-");
+    //     const start = parseInt(parts[0], 10);
+    //     const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+    //     if (start >= fileSize) {
+    //         res.writeHead(416, { "Content-Range": `bytes */${fileSize}` });
+    //         return res.end();
+    //     }
+    //     const chunkSize = end - start + 1;
+    //     const fileStream = fs.createReadStream(videoPath, { start, end });
+    //     res.writeHead(206, {
+    //         "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+    //         "Accept-Ranges": "bytes",
+    //         "Content-Length": chunkSize,
+    //         "Content-Type": "video/mp4",
+    //         "Transfer-Encoding": "chunked"
+    //     });
+    //     fileStream.pipe(res);
+    // } else {
+    //     // Если клиент запрашивает весь файл
+    //     res.writeHead(200, {
+    //         "Content-Length": fileSize,
+    //         "Content-Type": "video/mp4",
+    //         "Transfer-Encoding": "chunked"
+    //     });
+    //     const fileStream = fs.createReadStream(videoPath);
+    //     fileStream.pipe(res);
+    // }
 };
 function notFound(req, res){
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });

@@ -3,7 +3,24 @@ const fs = require('fs');
 const path = require('path');
 const {getHtml, getHome,  getPeoplesJson, getPeoples, postPeopleForm, postPeopleJson, getImg, getMp3, getVideo, notFound} = require('./functions.js')
 
+const mime = require('mime-types');
+
 const server = http.createServer((req, res) => {
+    //Раздача статики из папки media:
+    if (req.method === 'GET' && req.url.startsWith('/media')) {
+        const filePath = path.join(__dirname, 'media', req.url.replace('/media', ''));
+        fs.readFile(filePath, (err, data) => {
+            if (err) {
+                notFound(req, res);
+                return;
+            }
+            const mimeType = mime.lookup(filePath) || 'application/octet-stream';
+            res.writeHead(200, {'Content-Type': mimeType});
+            res.end(data);
+        });
+        return;
+    }
+
     if (req.method === 'GET' && req.url === '/') {
         getHome(req, res);
         return

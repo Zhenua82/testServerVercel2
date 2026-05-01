@@ -3,6 +3,8 @@ const fs = require('fs');
 const querystring = require('querystring');
 const {dataJson} = require('./media/dataJson');
 
+const https = require('https');
+
 
 function getHome(req, res) {
     const filePath = path.join(__dirname, './media/home.html');
@@ -190,16 +192,18 @@ function getMp3(req, res){
 };
 function getVideo(req, res){
     // Заменил на фото:
-    const imgPath = path.join(__dirname, './media/824.jpg');
-    fs.readFile(imgPath, (err, data) => {
-        if (err) {
-            res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-            return res.end('Изображение не найдено');
-        }
-        res.writeHead(200, { 'Content-Type': 'image/jpeg' });
-        res.end(data);
-    });
-    //  const videoPath = path.join(__dirname, './media/video1.mp4');
+    // const imgPath = path.join(__dirname, './media/824.jpg');
+    // fs.readFile(imgPath, (err, data) => {
+    //     if (err) {
+    //         res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    //         return res.end('Изображение не найдено');
+    //     }
+    //     res.writeHead(200, { 'Content-Type': 'image/jpeg' });
+    //     res.end(data);
+    // });
+
+    //Если видео на самом сервере:
+    // const videoPath = path.join(__dirname, './media/video1.mp4');
     // // Проверяем, существует ли файл
     // if (!fs.existsSync(videoPath)) {
     //     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
@@ -238,6 +242,19 @@ function getVideo(req, res){
     //     const fileStream = fs.createReadStream(videoPath);
     //     fileStream.pipe(res);
     // }
+
+    //Если видео на другом сервере - проксируем его и передаем клиенту: 
+    const remoteUrl = 'https://res.cloudinary.com/dbynsbahm/video/upload/c_pad,b_blue,w_1900,ar_1,q_auto,f_auto/VID-20240515-WA0006_diwpbb.mp4';
+    https.get(remoteUrl, (proxyRes) => {
+        // Устанавливаем соответствующие заголовки
+        res.writeHead(proxyRes.statusCode, proxyRes.headers);
+        // Передаём полученные данные клиенту
+        proxyRes.pipe(res);
+    }).on('error', (err) => {
+        console.error('Ошибка при проксировании видео:', err);
+        res.writeHead(500);
+        res.end('Ошибка получения видео с внешнего ресурса');
+    });
 };
 function notFound(req, res){
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });

@@ -240,28 +240,6 @@ function getImg(req, res){
     });
 };
 
-// async function getImg(req, res) {
-//     try {
-//         const response = await fetch('https://res.cloudinary.com/dbynsbahm/image/upload/v1769426653/plants/nhamijykms5emex8fh8b.webp');
-
-//         if (!response.ok) {
-//             res.writeHead(response.status);
-//             return res.end('Ошибка загрузки');
-//         }
-
-//         res.writeHead(200, {
-//             'Content-Type': response.headers.get('content-type'),
-//             'Cache-Control': 'public, max-age=86400'
-//         });
-
-//         response.body.pipe(res);
-
-//     } catch (e) {
-//         res.writeHead(500);
-//         res.end('Ошибка сервера');
-//     }
-// }
-
 function getMp3(req, res){
     // const mp3Path = path.join(__dirname, './media/Gans.mp3');
     const mp3Path = path.join(__dirname, './media/steklo.mp3');

@@ -6,41 +6,41 @@ const {dataJson} = require('./media/dataJson');
 const https = require('https');
 
 
-function getHome(req, res) {
-    // const filePath = path.join(__dirname, './media/home.html');
-    // fs.readFile(filePath, 'utf8', (err, htmlTemplate) => {
-    //     if (err) {
-    //         res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-    //         return res.end('Файл не найден');
-    //     }
-    //     // Генерируем список имён
-    //     const namesList = dataJson.map(person => `<li>${person.name}</li>`).join('');
-    //     // Вычисляем средний возраст
-    //     const avgAge = (dataJson.reduce((sum, p) => sum + p.age, 0) / dataJson.length).toFixed(1);
-    //     // Вставляем в шаблон
-    //     const renderedHtml = htmlTemplate
-    //         .replace('<!--NAMES_PLACEHOLDER-->', `<ul>${namesList}</ul>`)
-    //         .replace('<!--AVG_AGE_PLACEHOLDER-->', `<p><strong>Средний возраст:</strong> ${avgAge} лет</p>`);
-    //     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    //     res.end(renderedHtml);
-    // });
+// function getHome(req, res) {
+//     const filePath = path.join(__dirname, './media/home.html');
+//     fs.readFile(filePath, 'utf8', (err, htmlTemplate) => {
+//         if (err) {
+//             res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+//             return res.end('Файл не найден');
+//         }
+//         // Генерируем список имён
+//         const namesList = dataJson.map(person => `<li>${person.name}</li>`).join('');
+//         // Вычисляем средний возраст
+//         const avgAge = (dataJson.reduce((sum, p) => sum + p.age, 0) / dataJson.length).toFixed(1);
+//         // Вставляем в шаблон
+//         const renderedHtml = htmlTemplate
+//             .replace('<!--NAMES_PLACEHOLDER-->', `<ul>${namesList}</ul>`)
+//             .replace('<!--AVG_AGE_PLACEHOLDER-->', `<p><strong>Средний возраст:</strong> ${avgAge} лет</p>`);
+//         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+//         res.end(renderedHtml);
+//     });
+// }
 
-    const homeTemplate = fs.readFileSync(
-        path.join(__dirname, './media/home.html'),
-        'utf8'
-    );
-    function getHome(req, res) {
-        const namesList = dataJson.map(p => `<li>${p.name}</li>`).join('');
-        const avgAge = (dataJson.reduce((s, p) => s + p.age, 0) / dataJson.length).toFixed(1);
-        const html = homeTemplate
-            .replace('<!--NAMES_PLACEHOLDER-->', `<ul>${namesList}</ul>`)
-            .replace('<!--AVG_AGE_PLACEHOLDER-->', `<p><strong>Средний возраст:</strong> ${avgAge} лет</p>`);
-        res.writeHead(200, {
-            'Content-Type': 'text/html; charset=utf-8',
-            'Cache-Control': 'public, s-maxage=60'
-        });
-        res.end(html);
-    }
+const homeTemplate = fs.readFileSync(
+    path.join(__dirname, './media/home.html'),
+    'utf8'
+);
+function getHome(req, res) {
+    const namesList = dataJson.map(p => `<li>${p.name}</li>`).join('');
+    const avgAge = (dataJson.reduce((s, p) => s + p.age, 0) / dataJson.length).toFixed(1);
+    const html = homeTemplate
+        .replace('<!--NAMES_PLACEHOLDER-->', `<ul>${namesList}</ul>`)
+        .replace('<!--AVG_AGE_PLACEHOLDER-->', `<p><strong>Средний возраст:</strong> ${avgAge} лет</p>`);
+    res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'public, s-maxage=60'
+    });
+    res.end(html);
 }
 
 function getHtml(req, res){

@@ -42,34 +42,85 @@ function getPeoplesJson(req, res){
 };
 function getPeoples(req, res) {
     // Формируем HTML для каждого человека
+    // const htmlList = dataJson.map(person => {
+    //     return `
+    //         <div style="margin-bottom: 10px;">
+    //             <p style="color: red;"><strong>Id:</strong> ${person.id}</p>
+    //             <p><strong>Имя:</strong> ${person.name}</p>
+    //             <p><strong>Возраст:</strong> ${person.age}</p>
+    //         </div>
+    //         <hr/>
+    //     `;
+    // }).join('');
     const htmlList = dataJson.map(person => {
         return `
-            <div style="margin-bottom: 10px;">
-                <p style="color: red;"><strong>Id:</strong> ${person.id}</p>
-                <p><strong>Имя:</strong> ${person.name}</p>
-                <p><strong>Возраст:</strong> ${person.age}</p>
+            <div class="person">
+                <div class="name">
+                    <span>${person.name}</span>
+                    <span>ID: ${person.id}</span>
+                </div>
+
+                <div class="telDiv">
+                    Возраст: ${person.age}
+                </div>
             </div>
-            <hr/>
         `;
     }).join('');
+
     // Отправляем HTML-страницу
+    // const html = `
+    //     <!DOCTYPE html>
+    //     <html lang="ru">
+    //     <head>
+    //         <meta charset="UTF-8">
+    //         <title>Список людей</title>
+    //     </head>
+    //     <body>
+    //     <header class="header">
+    //         <a href="https://testserver-eight-olive.vercel.app/front/index.html" class="nav-link">🏠 Главная</a>
+    //     </header>
+    //         <h1>Список людей</h1>
+    //         ${htmlList}
+    //         <p></p>
+    //         <div style="text-align: center; margin-top: 40px;">
+    //             <a href='/' style="color: purple; font-size: 30px;">Вернуться на страницу с формой добавления людей</a>
+    //         </div>
+    //     </body>
+    //     </html>
+    // `;
+
     const html = `
         <!DOCTYPE html>
         <html lang="ru">
         <head>
             <meta charset="UTF-8">
             <title>Список людей</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+            <link rel="stylesheet" href="/media/home.css">
         </head>
+
         <body>
+
+        <header class="header">
+            <a href="https://testserver-eight-olive.vercel.app/front/index.html" class="nav-link">🏠 Главная</a>
+        </header>
+
+        <main class="container">
             <h1>Список людей</h1>
-            ${htmlList}
-            <p></p>
-            <div style="text-align: center; margin-top: 40px;">
-                <a href='/' style="color: purple; font-size: 30px;">Вернуться на главную страницу</a>
+
+            <div class="grid">
+                ${htmlList}
             </div>
+
+            <div class="back-link">
+                <a href="/">Вернуться назад</a>
+            </div>
+        </main>
+
         </body>
         </html>
-    `;
+        `;
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
 }
@@ -155,40 +206,86 @@ function postPeopleJson(req, res) {
 }
 
 function getImg(req, res){
-    const imgPath = path.join(__dirname, './media/824.jpg');
-    fs.readFile(imgPath, (err, data) => {
-        if (err) {
-            res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-            return res.end('Изображение не найдено');
+    //Если фото на самом сервере:
+    // const imgPath = path.join(__dirname, './media/824.jpg');
+    // fs.readFile(imgPath, (err, data) => {
+    //     if (err) {
+    //         res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    //         return res.end('Изображение не найдено');
+    //     }
+    //     res.writeHead(200, { 'Content-Type': 'image/jpeg' });
+    //     res.end(data);
+    // });
+
+    //Если фото на другом сервере - проксируем его и передаем клиенту: 
+    const imageUrl = 'https://res.cloudinary.com/dbynsbahm/image/upload/v1769426653/plants/nhamijykms5emex8fh8b.webp';
+    https.get(imageUrl, (imgRes) => {
+        if (imgRes.statusCode !== 200) {
+            res.writeHead(imgRes.statusCode, { 'Content-Type': 'text/plain' });
+            return res.end('Ошибка загрузки изображения');
         }
-        res.writeHead(200, { 'Content-Type': 'image/jpeg' });
-        res.end(data);
+
+        // прокидываем заголовки (очень желательно)
+        res.writeHead(200, {
+            'Content-Type': imgRes.headers['content-type'] || 'image/webp',
+            'Cache-Control': 'public, max-age=86400' // кэш на сутки
+        });
+
+        // стримим напрямую клиенту
+        imgRes.pipe(res);
+
+    }).on('error', (err) => {
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
+        res.end('Ошибка сервера');
     });
 };
 
+// async function getImg(req, res) {
+//     try {
+//         const response = await fetch('https://res.cloudinary.com/dbynsbahm/image/upload/v1769426653/plants/nhamijykms5emex8fh8b.webp');
+
+//         if (!response.ok) {
+//             res.writeHead(response.status);
+//             return res.end('Ошибка загрузки');
+//         }
+
+//         res.writeHead(200, {
+//             'Content-Type': response.headers.get('content-type'),
+//             'Cache-Control': 'public, max-age=86400'
+//         });
+
+//         response.body.pipe(res);
+
+//     } catch (e) {
+//         res.writeHead(500);
+//         res.end('Ошибка сервера');
+//     }
+// }
+
 function getMp3(req, res){
     // const mp3Path = path.join(__dirname, './media/Gans.mp3');
-    // // Проверяем, существует ли файл
-    // if (!fs.existsSync(mp3Path)) {
-    //     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-    //     return res.end('Аудио файл не найден');
-    // }
-    // // Устанавливаем заголовки для аудиофайла
-    // res.writeHead(200, { 'Content-Type': 'audio/mpeg' });
-    // // Создаем поток для чтения и передаем его в `res`
-    // const readStream = fs.createReadStream(mp3Path);
-    // readStream.pipe(res); 
+    const mp3Path = path.join(__dirname, './media/steklo.mp3');
+    // Проверяем, существует ли файл
+    if (!fs.existsSync(mp3Path)) {
+        res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+        return res.end('Аудио файл не найден');
+    }
+    // Устанавливаем заголовки для аудиофайла
+    res.writeHead(200, { 'Content-Type': 'audio/mpeg' });
+    // Создаем поток для чтения и передаем его в `res`
+    const readStream = fs.createReadStream(mp3Path);
+    readStream.pipe(res); 
 
  // Заменил на фото:
-    const imgPath = path.join(__dirname, './media/824.jpg');
-    fs.readFile(imgPath, (err, data) => {
-        if (err) {
-            res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-            return res.end('Изображение не найдено');
-        }
-        res.writeHead(200, { 'Content-Type': 'image/jpeg' });
-        res.end(data);
-    });
+    // const imgPath = path.join(__dirname, './media/824.jpg');
+    // fs.readFile(imgPath, (err, data) => {
+    //     if (err) {
+    //         res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    //         return res.end('Изображение не найдено');
+    //     }
+    //     res.writeHead(200, { 'Content-Type': 'image/jpeg' });
+    //     res.end(data);
+    // });
 };
 function getVideo(req, res){
     // Заменил на фото:

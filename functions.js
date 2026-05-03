@@ -7,24 +7,42 @@ const https = require('https');
 
 
 function getHome(req, res) {
-    const filePath = path.join(__dirname, './media/home.html');
-    fs.readFile(filePath, 'utf8', (err, htmlTemplate) => {
-        if (err) {
-            res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-            return res.end('Файл не найден');
-        }
-        // Генерируем список имён
-        const namesList = dataJson.map(person => `<li>${person.name}</li>`).join('');
-        // Вычисляем средний возраст
-        const avgAge = (dataJson.reduce((sum, p) => sum + p.age, 0) / dataJson.length).toFixed(1);
-        // Вставляем в шаблон
-        const renderedHtml = htmlTemplate
+    // const filePath = path.join(__dirname, './media/home.html');
+    // fs.readFile(filePath, 'utf8', (err, htmlTemplate) => {
+    //     if (err) {
+    //         res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    //         return res.end('Файл не найден');
+    //     }
+    //     // Генерируем список имён
+    //     const namesList = dataJson.map(person => `<li>${person.name}</li>`).join('');
+    //     // Вычисляем средний возраст
+    //     const avgAge = (dataJson.reduce((sum, p) => sum + p.age, 0) / dataJson.length).toFixed(1);
+    //     // Вставляем в шаблон
+    //     const renderedHtml = htmlTemplate
+    //         .replace('<!--NAMES_PLACEHOLDER-->', `<ul>${namesList}</ul>`)
+    //         .replace('<!--AVG_AGE_PLACEHOLDER-->', `<p><strong>Средний возраст:</strong> ${avgAge} лет</p>`);
+    //     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    //     res.end(renderedHtml);
+    // });
+
+    const homeTemplate = fs.readFileSync(
+        path.join(__dirname, './media/home.html'),
+        'utf8'
+    );
+    function getHome(req, res) {
+        const namesList = dataJson.map(p => `<li>${p.name}</li>`).join('');
+        const avgAge = (dataJson.reduce((s, p) => s + p.age, 0) / dataJson.length).toFixed(1);
+        const html = homeTemplate
             .replace('<!--NAMES_PLACEHOLDER-->', `<ul>${namesList}</ul>`)
             .replace('<!--AVG_AGE_PLACEHOLDER-->', `<p><strong>Средний возраст:</strong> ${avgAge} лет</p>`);
-        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-        res.end(renderedHtml);
-    });
+        res.writeHead(200, {
+            'Content-Type': 'text/html; charset=utf-8',
+            'Cache-Control': 'public, s-maxage=60'
+        });
+        res.end(html);
+    }
 }
+
 function getHtml(req, res){
     const filePath = path.join(__dirname, './media/index.html');
     fs.readFile(filePath, (err, data) => {
@@ -42,16 +60,6 @@ function getPeoplesJson(req, res){
 };
 function getPeoples(req, res) {
     // Формируем HTML для каждого человека
-    // const htmlList = dataJson.map(person => {
-    //     return `
-    //         <div style="margin-bottom: 10px;">
-    //             <p style="color: red;"><strong>Id:</strong> ${person.id}</p>
-    //             <p><strong>Имя:</strong> ${person.name}</p>
-    //             <p><strong>Возраст:</strong> ${person.age}</p>
-    //         </div>
-    //         <hr/>
-    //     `;
-    // }).join('');
     const htmlList = dataJson.map(person => {
         return `
             <div class="person">
@@ -68,27 +76,6 @@ function getPeoples(req, res) {
     }).join('');
 
     // Отправляем HTML-страницу
-    // const html = `
-    //     <!DOCTYPE html>
-    //     <html lang="ru">
-    //     <head>
-    //         <meta charset="UTF-8">
-    //         <title>Список людей</title>
-    //     </head>
-    //     <body>
-    //     <header class="header">
-    //         <a href="https://testserver-eight-olive.vercel.app/front/index.html" class="nav-link">🏠 Главная</a>
-    //     </header>
-    //         <h1>Список людей</h1>
-    //         ${htmlList}
-    //         <p></p>
-    //         <div style="text-align: center; margin-top: 40px;">
-    //             <a href='/' style="color: purple; font-size: 30px;">Вернуться на страницу с формой добавления людей</a>
-    //         </div>
-    //     </body>
-    //     </html>
-    // `;
-
     const html = `
         <!DOCTYPE html>
         <html lang="ru">
@@ -121,7 +108,11 @@ function getPeoples(req, res) {
         </body>
         </html>
         `;
-    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.writeHead(200, {
+    'Content-Type': 'text/html; charset=utf-8',
+    // 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300'
+    'Cache-Control': 'public, s-maxage=60'
+    });
     res.end(html);
 }
 function postPeopleForm(req, res){

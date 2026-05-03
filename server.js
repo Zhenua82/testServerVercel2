@@ -15,7 +15,12 @@ const server = http.createServer((req, res) => {
                 return;
             }
             const mimeType = mime.lookup(filePath) || 'application/octet-stream';
-            res.writeHead(200, {'Content-Type': mimeType});
+            // res.writeHead(200, {'Content-Type': mimeType});
+            //Кэш статики на 1 год:
+            res.writeHead(200, {
+            'Content-Type': mimeType,
+            'Cache-Control': 'public, max-age=31536000, immutable'
+            });
             res.end(data);
         });
         return;
